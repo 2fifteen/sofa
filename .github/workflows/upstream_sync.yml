@@ -1,0 +1,57 @@
+name: Sync Upstream SOFA Data
+
+on:
+  schedule:
+    # Run every hour during business hours for critical updates
+    - cron: '0 17-20 * * 1,2,3,4,5'
+    # Run every 4 hours otherwise
+    - cron: '30 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-upstream:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create directories
+      run: |
+        mkdir -p v1 public/v1 cache
+
+    - name: Fetch upstream feeds and cache
+      run: |
+        # Fetch main feed files
+        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json || echo "Failed to fetch macOS feed"
+        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json || echo "Failed to fetch iOS feed"
+        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json || echo "Failed to fetch timestamp"
+        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml || echo "Failed to fetch RSS"
+        
+        # Fetch cache files if available (these might not be public)
+        curl -s https://sofa.macadmins.io/cache/XProtect_rss_data.json > cache/XProtect_rss_data.json || true
+        curl -s https://sofa.macadmins.io/cache/cve_details.json > cache/cve_details.json || true
+        curl -s https://sofa.macadmins.io/cache/essential_links.json > cache/essential_links.json || true
+        curl -s https://sofa.macadmins.io/cache/supported_devices.json > cache/supported_devices.json || true
+        
+        # Copy to public directory
+        cp v1/*.json public/v1/ || true
+        cp v1/*.xml public/v1/ || true
+
+    - name: Verify data integrity
+      run: |
+        # Check if essential files exist and are valid JSON
+        for file in v1/macos_data_feed.json v1/ios_data_feed.json v1/timestamp.json; do
+          if [ -f "$file" ]; then
+            jq . "$file" > /dev/null || echo "Invalid JSON in $file"
+          else
+            echo "Missing file: $file"
+          fi
+        done
+
+    - name: Commit and push if changes detected
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add v1/* public/v1/* cache/* || true
+        git commit -m "Sync upstream SOFA data - $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+        git push

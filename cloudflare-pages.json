@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run docs:build",
+  "outputDirectory": "web/.vitepress/dist",
+  "rootDirectory": "",
+  "envVars": {
+    "NODE_VERSION": "20"
+  }
+}

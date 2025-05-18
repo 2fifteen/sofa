@@ -1,0 +1,57 @@
+name: SOFA Feed Sync and Cloudflare Deployment
+
+on:
+  schedule:
+    # Run every 4 hours to sync with upstream
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Fetch upstream SOFA feeds
+      run: |
+        mkdir -p v1 public/v1
+        
+        # Fetch production feeds from sofa.macadmins.io
+        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json
+        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json
+        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json
+        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml
+        
+        # Copy to public directory for VitePress
+        cp v1/*.json public/v1/
+        cp v1/*.xml public/v1/
+
+    - name: Build VitePress site
+      run: npm run docs:build
+
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        projectName: sofa-feed  # Change this to your project name
+        directory: web/.vitepress/dist
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+        wranglerVersion: '3'
+
+    - name: Commit feed updates (if changed)
+      run: |
+        git config --global user.name 'github-actions'
+        git config --global user.email 'github-actions@github.com'
+        git add v1/*.json v1/*.xml
+        git commit -m "Sync upstream SOFA feeds - $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+        git push
