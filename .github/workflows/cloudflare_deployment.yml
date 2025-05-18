@@ -91,7 +91,7 @@ jobs:
       with:
         apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        projectName: sofa-feed  # Change this to your project name
+        projectName: sofa  # Update this with your actual Cloudflare Pages project name
         directory: web/.vitepress/dist
         gitHubToken: ${{ secrets.GITHUB_TOKEN }}
         wranglerVersion: '3'
