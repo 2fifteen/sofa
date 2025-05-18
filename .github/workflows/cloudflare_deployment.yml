@@ -26,18 +26,58 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Fetch upstream SOFA feeds
+    - name: Fetch upstream SOFA feeds with validation
       run: |
-        # Fetch production feeds from sofa.macadmins.io
-        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json || echo "Failed to fetch macOS feed"
-        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json || echo "Failed to fetch iOS feed"
-        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json || echo "Failed to fetch timestamp"
-        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml || echo "Failed to fetch RSS"
+        # Function to fetch and validate JSON
+        fetch_json() {
+          local url=$1
+          local output=$2
+          
+          # Create directory if it doesn't exist
+          mkdir -p $(dirname "$output")
+          
+          # Fetch with proper headers
+          if curl -H "Accept: application/json" -sS "$url" -o "$output.tmp"; then
+            # Check if it's valid JSON
+            if jq . "$output.tmp" > /dev/null 2>&1; then
+              mv "$output.tmp" "$output"
+              echo "✓ Successfully fetched and validated $output"
+            else
+              echo "✗ Invalid JSON from $url - using empty JSON"
+              if [[ "$output" == *"_data_feed.json" ]]; then
+                echo "[]" > "$output"
+              else
+                echo "{}" > "$output"
+              fi
+              rm -f "$output.tmp"
+            fi
+          else
+            echo "✗ Failed to fetch $url - using empty JSON"
+            if [[ "$output" == *"_data_feed.json" ]]; then
+              echo "[]" > "$output"
+            else
+              echo "{}" > "$output"
+            fi
+          fi
+        }
         
-        # Fetch cache files if available
-        curl -s https://sofa.macadmins.io/cache/cve_details.json > cache/cve_details.json || true
-        curl -s https://sofa.macadmins.io/cache/essential_links.json > cache/essential_links.json || true
-        curl -s https://sofa.macadmins.io/cache/supported_devices.json > cache/supported_devices.json || true
+        # Fetch production feeds from sofa.macadmins.io
+        fetch_json "https://sofafeed.macadmins.io/v1/macos_data_feed.json" "v1/macos_data_feed.json"
+        fetch_json "https://sofafeed.macadmins.io/v1/ios_data_feed.json" "v1/ios_data_feed.json"
+        fetch_json "https://sofafeed.macadmins.io/v1/timestamp.json" "v1/timestamp.json"
+        
+        # Fetch RSS separately as it's XML
+        curl -sS "https://sofafeed.macadmins.io/v1/rss_feed.xml" -o "v1/rss_feed.xml" || echo "Failed to fetch RSS"
+        
+        # Create proper empty cache files needed by Vue components
+        # cve_details.json needs specific structure
+        echo '{"CVE_Details": []}' > cache/cve_details.json
+        
+        # essential_links.json needs specific structure
+        echo '{}' > cache/essential_links.json
+        
+        # supported_devices.json needs specific structure
+        echo '{}' > cache/supported_devices.json
         
         # Copy to public directory for VitePress
         cp v1/*.json public/v1/

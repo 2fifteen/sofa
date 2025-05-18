@@ -5,34 +5,32 @@ mkdir -p cache v1 public/v1
 
 # Create empty JSON files with valid JSON structure if they don't exist
 declare -a json_files=(
-    "cache/cve_details.json"
-    "cache/essential_links.json"
-    "cache/gdmf_cached.json"
-    "cache/gdmf_log.json"
-    "cache/iOS_beta_info.json"
-    "cache/iOS_rss_data.json"
-    "cache/macOS_beta_info.json"
-    "cache/macOS_rss_data.json"
-    "cache/model_identifier_monterey.json"
-    "cache/model_identifier_sequoia.json"
-    "cache/model_identifier_sonoma.json"
-    "cache/model_identifier_ventura.json"
-    "cache/supported_devices.json"
-    "cache/XProtect_rss_data.json"
-    "v1/macos_data_feed.json"
-    "v1/ios_data_feed.json"
-    "v1/timestamp.json"
+    "v1/macos_data_feed.json|[]"
+    "v1/ios_data_feed.json|[]"
+    "v1/timestamp.json|{}"
+    "cache/cve_details.json|{\"CVE_Details\": []}"
+    "cache/essential_links.json|{}"
+    "cache/gdmf_cached.json|{}"
+    "cache/gdmf_log.json|{}"
+    "cache/iOS_beta_info.json|{}"
+    "cache/iOS_rss_data.json|[]"
+    "cache/macOS_beta_info.json|{}"
+    "cache/macOS_rss_data.json|[]"
+    "cache/model_identifier_monterey.json|{}"
+    "cache/model_identifier_sequoia.json|{}"
+    "cache/model_identifier_sonoma.json|{}"
+    "cache/model_identifier_ventura.json|{}"
+    "cache/supported_devices.json|{}"
+    "cache/XProtect_rss_data.json|[]"
 )
 
-# Create empty JSON objects/arrays for missing files
-for file in "${json_files[@]}"; do
+# Create empty JSON files with proper structure
+for entry in "${json_files[@]}"; do
+    file="${entry%%|*}"
+    content="${entry##*|}"
     if [ ! -f "$file" ]; then
-        if [[ "$file" == *"_rss_data.json" ]] || [[ "$file" == *"_data_feed.json" ]]; then
-            echo "[]" > "$file"
-        else
-            echo "{}" > "$file"
-        fi
-        echo "Created empty $file"
+        echo "$content" > "$file"
+        echo "Created $file with structure: $content"
     fi
 done
 
