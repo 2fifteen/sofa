@@ -51,9 +51,17 @@ The repository includes two workflows:
 ### 4. Initial Deployment
 
 1. Enable GitHub Actions in your repository
-2. Run the "Sync Upstream SOFA Data" workflow manually
-3. Run the "SOFA Feed Sync and Cloudflare Deployment" workflow
-4. Your site should be live at `https://sofa-feed.pages.dev` (or your custom domain)
+2. Make the initialization script executable:
+   ```bash
+   git add init-empty-files.sh
+   git commit -m "Add initialization script"
+   git push
+   ```
+3. Run the "Sync Upstream SOFA Data" workflow manually first
+4. Then run the "SOFA Feed Sync and Cloudflare Deployment" workflow
+5. Your site should be live at `https://sofa-feed.pages.dev` (or your custom domain)
+
+**Note**: The initialization script creates empty JSON files to prevent build errors on first deployment. These will be populated with real data from the upstream SOFA feed.
 
 ### 5. Custom Domain (Optional)
 

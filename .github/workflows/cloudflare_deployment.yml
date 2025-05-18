@@ -1,10 +1,10 @@
 name: SOFA Feed Sync and Cloudflare Deployment
 
 on:
-  schedule:
-    # Run every 4 hours to sync with upstream
-    - cron: '0 */4 * * *'
   workflow_dispatch:
+  schedule:
+    # Run every 12 hours to sync and deploy
+    - cron: '0 */12 * * *'
 
 jobs:
   sync-and-deploy:
@@ -12,6 +12,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Initialize empty files for first deployment
+      run: |
+        chmod +x init-empty-files.sh
+        ./init-empty-files.sh
 
     - name: Set up Node.js
       uses: actions/setup-node@v4
@@ -23,13 +28,16 @@ jobs:
 
     - name: Fetch upstream SOFA feeds
       run: |
-        mkdir -p v1 public/v1
-        
         # Fetch production feeds from sofa.macadmins.io
-        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json
-        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json
-        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json
-        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml
+        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json || echo "Failed to fetch macOS feed"
+        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json || echo "Failed to fetch iOS feed"
+        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json || echo "Failed to fetch timestamp"
+        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml || echo "Failed to fetch RSS"
+        
+        # Fetch cache files if available
+        curl -s https://sofa.macadmins.io/cache/cve_details.json > cache/cve_details.json || true
+        curl -s https://sofa.macadmins.io/cache/essential_links.json > cache/essential_links.json || true
+        curl -s https://sofa.macadmins.io/cache/supported_devices.json > cache/supported_devices.json || true
         
         # Copy to public directory for VitePress
         cp v1/*.json public/v1/
@@ -52,6 +60,6 @@ jobs:
       run: |
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
-        git add v1/*.json v1/*.xml
+        git add v1/* cache/* || true
         git commit -m "Sync upstream SOFA feeds - $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
         git push

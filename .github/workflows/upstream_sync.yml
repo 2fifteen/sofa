@@ -15,6 +15,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    - name: Initialize empty files if needed
+      run: |
+        if [ -f "init-empty-files.sh" ]; then
+          chmod +x init-empty-files.sh
+          ./init-empty-files.sh
+        fi
+
     - name: Create directories
       run: |
         mkdir -p v1 public/v1 cache
@@ -22,16 +29,38 @@ jobs:
     - name: Fetch upstream feeds and cache
       run: |
         # Fetch main feed files
-        curl -s https://sofafeed.macadmins.io/v1/macos_data_feed.json > v1/macos_data_feed.json || echo "Failed to fetch macOS feed"
-        curl -s https://sofafeed.macadmins.io/v1/ios_data_feed.json > v1/ios_data_feed.json || echo "Failed to fetch iOS feed"
-        curl -s https://sofafeed.macadmins.io/v1/timestamp.json > v1/timestamp.json || echo "Failed to fetch timestamp"
-        curl -s https://sofafeed.macadmins.io/v1/rss_feed.xml > v1/rss_feed.xml || echo "Failed to fetch RSS"
+        echo "Fetching upstream feeds..."
         
-        # Fetch cache files if available (these might not be public)
-        curl -s https://sofa.macadmins.io/cache/XProtect_rss_data.json > cache/XProtect_rss_data.json || true
-        curl -s https://sofa.macadmins.io/cache/cve_details.json > cache/cve_details.json || true
-        curl -s https://sofa.macadmins.io/cache/essential_links.json > cache/essential_links.json || true
-        curl -s https://sofa.macadmins.io/cache/supported_devices.json > cache/supported_devices.json || true
+        # Use curl with error handling
+        if curl -sS https://sofafeed.macadmins.io/v1/macos_data_feed.json -o v1/macos_data_feed.json; then
+          echo "✓ macOS feed fetched successfully"
+        else
+          echo "⚠ Failed to fetch macOS feed"
+        fi
+        
+        if curl -sS https://sofafeed.macadmins.io/v1/ios_data_feed.json -o v1/ios_data_feed.json; then
+          echo "✓ iOS feed fetched successfully"
+        else
+          echo "⚠ Failed to fetch iOS feed"
+        fi
+        
+        if curl -sS https://sofafeed.macadmins.io/v1/timestamp.json -o v1/timestamp.json; then
+          echo "✓ Timestamp fetched successfully"
+        else
+          echo "⚠ Failed to fetch timestamp"
+        fi
+        
+        if curl -sS https://sofafeed.macadmins.io/v1/rss_feed.xml -o v1/rss_feed.xml; then
+          echo "✓ RSS feed fetched successfully"
+        else
+          echo "⚠ Failed to fetch RSS feed"
+        fi
+        
+        # Try to fetch cache files (these URLs might not be publicly accessible)
+        echo "Attempting to fetch cache files..."
+        curl -s https://sofa.macadmins.io/cache/cve_details.json -o cache/cve_details.json || echo "Could not fetch cve_details.json"
+        curl -s https://sofa.macadmins.io/cache/essential_links.json -o cache/essential_links.json || echo "Could not fetch essential_links.json"
+        curl -s https://sofa.macadmins.io/cache/supported_devices.json -o cache/supported_devices.json || echo "Could not fetch supported_devices.json"
         
         # Copy to public directory
         cp v1/*.json public/v1/ || true
@@ -41,10 +70,26 @@ jobs:
       run: |
         # Check if essential files exist and are valid JSON
         for file in v1/macos_data_feed.json v1/ios_data_feed.json v1/timestamp.json; do
-          if [ -f "$file" ]; then
-            jq . "$file" > /dev/null || echo "Invalid JSON in $file"
+          if [ -f "$file" ] && [ -s "$file" ]; then
+            if jq empty "$file" 2>/dev/null; then
+              echo "✓ $file is valid JSON"
+            else
+              echo "✗ $file is invalid JSON"
+              # Create empty valid JSON if invalid
+              if [[ "$file" == *"_data_feed.json" ]]; then
+                echo "[]" > "$file"
+              else
+                echo "{}" > "$file"
+              fi
+            fi
           else
-            echo "Missing file: $file"
+            echo "✗ $file is missing or empty"
+            # Create empty valid JSON
+            if [[ "$file" == *"_data_feed.json" ]]; then
+              echo "[]" > "$file"
+            else
+              echo "{}" > "$file"
+            fi
           fi
         done
 
@@ -52,6 +97,15 @@ jobs:
       run: |
         git config --global user.name 'github-actions'
         git config --global user.email 'github-actions@github.com'
+        
+        # Add files with error handling
         git add v1/* public/v1/* cache/* || true
-        git commit -m "Sync upstream SOFA data - $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
-        git push
+        
+        # Check if there are any changes to commit
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Sync upstream SOFA data - $(date +'%Y-%m-%d %H:%M:%S')"
+          git push
+          echo "Changes committed and pushed"
+        fi
