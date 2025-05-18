@@ -1,11 +1,23 @@
-# SOFA 
+# SOFA - 2fifteen Fork
 **S**imple **O**rganized **F**eed for **A**pple Software Updates
 
 ![Sofa logo](./images/custom_logo.png "Optional title")
 
 Hello 👋,
 
-**SOFA** supports MacAdmins by efficiently tracking and surfacing information on updates for macOS and iOS. It consists of a machine-readable feed and user-friendly web interface, providing continuously up-to-date information on XProtect data, OS updates, and the details bundled in those releases.
+This is the **2fifteen fork** of SOFA, which provides an additional deployment of the SOFA feed with automatic synchronization from the upstream repository. This fork is **deployed on Cloudflare Pages** and is accessible at [sofa.2fifteen.io](https://sofa.2fifteen.io).
+
+## What This Fork Does
+
+This fork:
+- **Automatically syncs** data feeds from the upstream [macadmins/sofa](https://github.com/macadmins/sofa) repository
+- **Deploys to Cloudflare Pages** using GitHub Actions for reliable hosting
+- **Updates feeds regularly** using scheduled GitHub Actions (every hour during business hours, every 4 hours otherwise)
+- **Provides the same features** as the original SOFA, but with an alternative deployment endpoint
+
+The automated sync ensures this deployment stays up-to-date with the official SOFA feed while providing an alternative hosting location.
+
+**Original SOFA:** supports MacAdmins by efficiently tracking and surfacing information on updates for macOS and iOS. It consists of a machine-readable feed and user-friendly web interface, providing continuously up-to-date information on XProtect data, OS updates, and the details bundled in those releases.
 
 Updated automatically via GitHub Actions, the SOFA feed is a dynamic, centralized, and accessible source of truth. It can be self-hosted, giving you complete assurances as to the provenance of the data your fleet and coworkers can consume. The goal is to streamline the monitoring of Apple's software releases, thereby boosting security awareness and administrative efficiency.
 
