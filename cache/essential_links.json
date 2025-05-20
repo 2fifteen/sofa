@@ -1,18 +1,1 @@
-{
-  "iOS": {
-    "16": {},
-    "17": {},
-    "18": {}
-  },
-  "macOS": {
-    "Monterey": {},
-    "Ventura": {},
-    "Sonoma": {},
-    "Sequoia": {}
-  },
-  "Common": {},
-  "Apple Guides": {},
-  "Apple Developer": {},
-  "Security": {},
-  "Community Blogs": {}
-}
+{}
