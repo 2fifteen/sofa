@@ -9,7 +9,11 @@
       "Bash(ls:*)",
       "Bash(npm run docs:build:*)",
       "Bash(git fetch:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(chmod:*)",
+      "Bash(./validate-json-files.sh:*)",
+      "Bash(npm install)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

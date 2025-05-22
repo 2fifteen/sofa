@@ -5,7 +5,8 @@
   },
   "scripts": {
     "docs:dev": "DEBUG=true vitepress dev web",
-    "docs:build": "DEBUG=true vitepress build web",
+    "docs:build": "./validate-json-files.sh && DEBUG=true vitepress build web",
+    "docs:build:ci": "./validate-json-files.sh && npm run docs:build",
     "docs:preview": "DEBUG=true vitepress preview web"
   },
   "dependencies": {

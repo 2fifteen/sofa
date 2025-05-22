@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Frontend Development (VitePress/Vue)
 ```bash
+npm install         # Install dependencies
 npm run docs:dev    # Start development server at localhost:5173
 npm run docs:build  # Build static site to web/.vitepress/dist
 npm run docs:preview # Preview production build locally
@@ -13,11 +14,18 @@ npm run docs:preview # Preview production build locally
 
 ### Python Script Execution
 ```bash
+# Install Python dependencies first
+pip install -r requirements.txt
+
+# Main scripts
 python build-sofa-feed.py    # Main feed builder - processes OS data and generates JSON feeds
-python build-cve-cache.py    # Fetches CVE details from security APIs
+python build-cve-cache.py    # Fetches CVE details from security APIs (requires VULNCHECK_API_KEY)
 python process_ipsw.py       # Processes IPSW/installer data
 python process_uma.py        # Processes Universal Mac Assistant data
 python sofa-time-series.py   # Generates time series data
+
+# Initialize empty cache files if needed
+./init-empty-files.sh        # Creates initial empty JSON files in cache/
 ```
 
 ### Linting
@@ -27,10 +35,14 @@ ruff check .  # Check Python code style (configured in ruff.toml)
 ruff format . # Format Python code
 ```
 
-### Deployment
+### Manual Feed Testing
 ```bash
-# Cloudflare deployment (automatic via Actions)
-npm run docs:build  # Build step for Cloudflare Pages
+# Generate feeds locally
+python build-sofa-feed.py
+# Copy to public directory
+cp -r v1/* public/v1/
+# Test with local dev server
+npm run docs:dev
 ```
 
 ## Architecture Overview

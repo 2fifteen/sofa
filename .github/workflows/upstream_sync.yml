@@ -58,14 +58,45 @@ jobs:
         
         # Try to fetch cache files (these URLs might not be publicly accessible)
         echo "Attempting to fetch cache files..."
-        curl -s https://sofa.macadmins.io/cache/cve_details.json -o cache/cve_details.json || echo "Could not fetch cve_details.json"
-        curl -s https://sofa.macadmins.io/cache/essential_links.json -o cache/essential_links.json || echo "Could not fetch essential_links.json"
-        curl -s https://sofa.macadmins.io/cache/supported_devices.json -o cache/supported_devices.json || echo "Could not fetch supported_devices.json"
+        
+        # Function to safely fetch and validate JSON
+        fetch_json() {
+          local url=$1
+          local output=$2
+          local temp_file="${output}.tmp"
+          
+          if curl -sS "$url" -o "$temp_file" 2>/dev/null; then
+            # Check if it's valid JSON and not HTML
+            if jq empty "$temp_file" 2>/dev/null && ! grep -q "<!DOCTYPE html>" "$temp_file" && ! grep -q "<html" "$temp_file"; then
+              mv "$temp_file" "$output"
+              echo "✓ Fetched valid JSON: $output"
+            else
+              rm -f "$temp_file"
+              echo "✗ Invalid response for $output (not JSON or contains HTML)"
+            fi
+          else
+            rm -f "$temp_file"
+            echo "✗ Failed to fetch $output"
+          fi
+        }
+        
+        # Fetch cache files with validation
+        fetch_json "https://sofa.macadmins.io/cache/cve_details.json" "cache/cve_details.json"
+        fetch_json "https://sofa.macadmins.io/cache/essential_links.json" "cache/essential_links.json"
+        fetch_json "https://sofa.macadmins.io/cache/supported_devices.json" "cache/supported_devices.json"
         
         # Copy to public directory
         cp v1/*.json public/v1/ || true
         cp v1/*.xml public/v1/ || true
 
+    - name: Validate and fix JSON files
+      run: |
+        # Run the validation script to ensure all JSON files are valid
+        if [ -f "validate-json-files.sh" ]; then
+          chmod +x validate-json-files.sh
+          ./validate-json-files.sh
+        fi
+        
     - name: Verify data integrity
       run: |
         # Check if essential files exist and are valid JSON

@@ -83,6 +83,11 @@ jobs:
         cp v1/*.json public/v1/
         cp v1/*.xml public/v1/
 
+    - name: Validate JSON files before build
+      run: |
+        chmod +x validate-json-files.sh
+        ./validate-json-files.sh
+
     - name: Build VitePress site
       run: npm run docs:build
 

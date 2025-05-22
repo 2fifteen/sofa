@@ -1,6 +1,5 @@
 import { defineConfig } from 'vitepress';
 import { resolve } from 'path';
-import { extractHeadings } from './plugins/extractHeadings';
 
 export default defineConfig({
   base: '/',
