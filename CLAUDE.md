@@ -86,11 +86,13 @@ This is the 2fifteen fork which:
 1. Automatically syncs from upstream macadmins/sofa repository
 2. Deploys to Cloudflare Pages at sofa.2fifteen.io
 3. Updates via scheduled GitHub Actions (hourly during business hours)
+4. Includes JSON validation to prevent build failures
 
-The sync workflow fetches:
-- macOS and iOS data feeds
-- Timestamp and RSS feeds  
-- Cache files (when available)
+The sync workflow:
+- Fetches macOS and iOS data feeds with validation
+- Validates JSON before saving (rejects HTML error pages)
+- Uses `validate-json-files.sh` to ensure all JSON is valid before builds
+- Handles upstream failures gracefully
 
 ## Development Tips
 
@@ -109,3 +111,11 @@ The sync workflow fetches:
 2. Use `npm run docs:dev` to preview changes
 3. Check that JSON feeds are valid with `jq` command
 4. Ensure GitHub Actions pass before merging
+
+### Handling Build Failures
+
+If Cloudflare Pages builds fail due to invalid JSON:
+1. Run `./validate-json-files.sh` to fix JSON files
+2. Check cache files for HTML content (404 errors)
+3. The build process will automatically validate before building
+4. GitHub Actions now validate JSON before committing

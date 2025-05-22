@@ -13,9 +13,11 @@ This fork:
 - **Automatically syncs** data feeds from the upstream [macadmins/sofa](https://github.com/macadmins/sofa) repository
 - **Deploys to Cloudflare Pages** using GitHub Actions for reliable hosting
 - **Updates feeds regularly** using scheduled GitHub Actions (every hour during business hours, every 4 hours otherwise)
+- **Validates JSON data** before committing to prevent build failures from invalid upstream responses
+- **Provides resilient deployment** that continues working even when upstream data fetches fail
 - **Provides the same features** as the original SOFA, but with an alternative deployment endpoint
 
-The automated sync ensures this deployment stays up-to-date with the official SOFA feed while providing an alternative hosting location.
+The automated sync ensures this deployment stays up-to-date with the official SOFA feed while providing an alternative hosting location with enhanced reliability.
 
 **Original SOFA:** supports MacAdmins by efficiently tracking and surfacing information on updates for macOS and iOS. It consists of a machine-readable feed and user-friendly web interface, providing continuously up-to-date information on XProtect data, OS updates, and the details bundled in those releases.
 
@@ -89,6 +91,22 @@ Visit the [SOFA Web UI](https://sofa.macadmins.io) to start exploring SOFA's fea
 ### Use the Feed Data
 
 Access the feed directly for integration with automated tools or scripts. For production use, we strongly recommend self-hosting the feed to enhance reliability and security. For guidance on how to utilize and implement the feed, explore examples in the [Tools](./tool-scripts) section. For details on self-hosting, please refer to the section below.
+
+## Fork-Specific Enhancements
+
+### JSON Validation System
+
+This fork includes a robust JSON validation system to prevent Cloudflare Pages build failures:
+
+- **validate-json-files.sh**: A script that checks all JSON files before build and replaces invalid content with valid empty structures
+- **GitHub Actions validation**: Both sync workflows validate JSON responses before saving to prevent committing HTML error pages
+- **Automatic build-time validation**: The build process runs validation automatically via npm scripts
+
+### Enhanced GitHub Actions
+
+- **upstream_sync.yml**: Enhanced with JSON validation for all fetched data
+- **cloudflare_deployment.yml**: Includes pre-build validation step
+- Both workflows handle failures gracefully, ensuring the site remains deployable
 
 ## Self-Hosting SOFA
 
