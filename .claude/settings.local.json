@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:sofa.2fifteen.io)",
+      "WebFetch(domain:sofa.macadmins.io)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
@@ -14,9 +14,7 @@
       "Bash(./validate-json-files.sh:*)",
       "Bash(npm install)",
       "Bash(rm:*)",
-      "Bash(git checkout:*)",
-      "Bash(grep:*)",
-      "Bash(cp:*)"
+      "Bash(git checkout:*)"
     ],
     "deny": []
   },

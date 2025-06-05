@@ -36,9 +36,9 @@ Updated automatically via GitHub Actions, the SOFA feed is a dynamic, centralize
 - Implement a USER-AGENT in Custom Tools
 To optimize hosting and caching for SOFA, please implement a user-agent in your integrations, tools, and workflows. This enhances performance and user interactions with SOFA.
 - Update to the New Feed Location
-Please update your scripts that are utilising the SOFA macOS and iOS feeds to point to **https://sofa.2fifteen.io/v1/macos_data_feed.json** and **https://sofa.2fifteen.io/v1/ios_data_feed.json** respectively.
+Please update your scripts that are utilising the SOFA macOS and iOS feeds to point to **https://sofafeed.macadmins.io/v1/macos_data_feed.json** and **https://sofafeed.macadmins.io/v1/ios_data_feed.json** respectively.
 
-The old feed addresses of https://sofafeed.macadmins.io/v1/macos_data_feed.json and https://sofafeed.macadmins.io/v1/ios_data_feed.json are **deprecated** and will be removed soon.
+The old feed addresses of https://sofa.macadmins.io/v1/macos_data_feed.json and https://sofa.macadmins.io/v1/ios_data_feed.json are **deprecated** and will be removed soon.
 
 ### Use Cases
 
@@ -86,7 +86,7 @@ The RSS feed is generated using [feedgen](https://feedgen.kiesow.be/) by leverag
 
 ### Access the Web UI
 
-Visit the [SOFA Web UI](https://sofa.2fifteen.io) to start exploring SOFA's features
+Visit the [SOFA Web UI](https://sofa.macadmins.io) to start exploring SOFA's features
 
 ### Use the Feed Data
 

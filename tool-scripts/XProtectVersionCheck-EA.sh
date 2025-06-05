@@ -12,7 +12,7 @@
 autoload is-at-least
 
 # URL to the online JSON data
-online_json_url="https://sofa.2fifteen.io/v1/macos_data_feed.json"
+online_json_url="https://sofafeed.macadmins.io/v1/macos_data_feed.json"
 user_agent="SOFA-Jamf-EA-XProtectVersionCheck/1.1"
 
 # local store

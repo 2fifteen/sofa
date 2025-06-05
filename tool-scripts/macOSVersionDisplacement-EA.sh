@@ -39,7 +39,7 @@ fi
 
 
 # URL to the online JSON data
-online_json_url="https://sofa.2fifteen.io/v1/macos_data_feed.json"
+online_json_url="https://sofafeed.macadmins.io/v1/macos_data_feed.json"
 user_agent="SOFA-Jamf-EA-macOSVersionDisplacement/1.0"
 
 # Local store
