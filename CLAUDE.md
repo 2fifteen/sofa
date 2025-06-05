@@ -9,6 +9,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm install         # Install dependencies
 npm run docs:dev    # Start development server at localhost:5173
 npm run docs:build  # Build static site to web/.vitepress/dist
+npm run docs:build:ci  # Build with validation for CI/CD
 npm run docs:preview # Preview production build locally
 ```
 
@@ -28,11 +29,15 @@ python sofa-time-series.py   # Generates time series data
 ./init-empty-files.sh        # Creates initial empty JSON files in cache/
 ```
 
-### Linting
+### Linting and Validation
 ```bash
 # Python linting
 ruff check .  # Check Python code style (configured in ruff.toml)
 ruff format . # Format Python code
+
+# JSON validation
+./validate-json-files.sh  # Validate and fix all JSON files before build
+jq . cache/*.json v1/*.json  # Manually validate JSON syntax
 ```
 
 ### Manual Feed Testing
@@ -54,6 +59,15 @@ npm run docs:dev
 4. **Output**: Generated feeds in `v1/` and `public/v1/`
 5. **Frontend**: VitePress site in `web/` consumes JSON feeds
 
+### Core Processing Flow
+- `build-sofa-feed.py` is the main orchestrator that:
+  - Fetches Apple software update catalogs and GDMF data
+  - Processes model identifier mappings from cache
+  - Generates structured JSON feeds for macOS and iOS
+  - Creates RSS feed from security releases
+- `build-cve-cache.py` enriches security data by fetching CVE details
+- Data validation happens at multiple points to prevent corrupted feeds
+
 ### Key Directories
 - `/cache` - Cached data including CVE details, device support, model identifiers
 - `/v1` - Generated JSON feeds and RSS output
@@ -66,6 +80,7 @@ npm run docs:dev
 - `forked_builds.json` - Maps build types to OS versions
 - `feed_structure_template_v1.yaml` - Defines JSON feed schema
 - `cloudflare-pages.json` - Cloudflare deployment configuration
+- `web/.vitepress/config.mts` - VitePress site configuration
 
 ### GitHub Actions Workflows
 - `upstream_sync.yml` - Syncs data from upstream macadmins/sofa
@@ -119,3 +134,9 @@ If Cloudflare Pages builds fail due to invalid JSON:
 2. Check cache files for HTML content (404 errors)
 3. The build process will automatically validate before building
 4. GitHub Actions now validate JSON before committing
+
+## API Keys and Environment Variables
+
+- **VULNCHECK_API_KEY**: Required for `build-cve-cache.py` to fetch CVE details
+- **DEBUG=true**: Enable verbose output for VitePress commands
+- Set in GitHub Actions secrets for automated workflows
