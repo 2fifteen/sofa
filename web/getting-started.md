@@ -43,15 +43,15 @@ For detailed instructions, check out our [Quick Start Guide to Self-Hosted SOFA]
 
 Access the JSON feed directly for integration with automated tools or scripts. The current JSON feed URLs for macOS and iOS respectively are as follows:
 
-- https://sofafeed.macadmins.io/v1/macos_data_feed.json
-- https://sofafeed.macadmins.io/v1/ios_data_feed.json
+- https://sofa.2fifteen.io/v1/macos_data_feed.json
+- https://sofa.2fifteen.io/v1/ios_data_feed.json
 
 For guidance on how to utilize and implement the feed in scripts, explore examples in the [Tools section](https://github.com/macadmins/sofa/tree/main/tool-scripts), and read [this blog post](https://grahamrpugh.com/2024/07/22/sofa-new-feed.html).
 
 
 ## RSS Overview
 
-Subsribe to the RSS feed here: https://sofa.macadmins.io/v1/rss_feed.xml
+Subsribe to the RSS feed here: https://sofa.2fifteen.io/v1/rss_feed.xml
 
 The RSS feed is generated using [feedgen](https://feedgen.kiesow.be/) by leveraging the same data generated for the data feed. It extracts `SecurityReleases` and injects them into individual entries, providing a streamlined and organized feed of the latest updates. The process involves:
 
