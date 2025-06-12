@@ -89,6 +89,21 @@ jobs:
         cp v1/*.json public/v1/ || true
         cp v1/*.xml public/v1/ || true
 
+    - name: Replace macadmins URLs with 2fifteen URLs
+      run: |
+        # Replace all macadmins.io URLs with 2fifteen.io URLs in fetched data
+        echo "Replacing macadmins URLs with 2fifteen URLs..."
+        
+        # Replace in JSON files
+        find v1 public/v1 cache -name "*.json" -type f -exec sed -i 's|https://sofa\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+        find v1 public/v1 cache -name "*.json" -type f -exec sed -i 's|https://sofafeed\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+        
+        # Replace in XML/RSS files
+        find v1 public/v1 -name "*.xml" -type f -exec sed -i 's|https://sofa\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+        find v1 public/v1 -name "*.xml" -type f -exec sed -i 's|https://sofafeed\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+        
+        echo "✓ URL replacement complete"
+
     - name: Validate and fix JSON files
       run: |
         # Run the validation script to ensure all JSON files are valid
