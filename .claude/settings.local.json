@@ -14,7 +14,15 @@
       "Bash(./validate-json-files.sh:*)",
       "Bash(npm install)",
       "Bash(rm:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "WebFetch(domain:sofa.2fifteen.io)",
+      "WebFetch(domain:sofafeed.macadmins.io)",
+      "Bash(grep:*)",
+      "Bash(jq:*)",
+      "Bash(cat:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh workflow:*)",
+      "WebFetch(domain:api.cloudflare.com)"
     ],
     "deny": []
   },
