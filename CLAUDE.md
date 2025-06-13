@@ -50,6 +50,38 @@ cp -r v1/* public/v1/
 npm run docs:dev
 ```
 
+### Troubleshooting JSON Feeds on Cloudflare Pages
+
+If JSON feeds return empty arrays `[]` or objects `{}` on production:
+
+1. **Check URL Replacement**: Ensure both workflows have the URL replacement step:
+   ```bash
+   # In .github/workflows/cloudflare_deployment.yml and upstream_sync.yml
+   - name: Replace macadmins URLs with 2fifteen URLs
+     run: |
+       find v1 public/v1 cache -name "*.json" -type f -exec sed -i 's|https://sofa\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+       find v1 public/v1 cache -name "*.json" -type f -exec sed -i 's|https://sofafeed\.macadmins\.io|https://sofa.2fifteen.io|g' {} +
+   ```
+
+2. **Verify Local Data**: Check if local files have valid data:
+   ```bash
+   jq -r '.OSVersions[0].OSVersion' v1/macos_data_feed.json  # Should show "Sequoia 15"
+   ls -lah v1/*.json  # Check file sizes (should be >50KB for data feeds)
+   ```
+
+3. **Force Deployment**: Trigger manual workflow run:
+   ```bash
+   GH_REPO=2fifteen/sofa gh workflow run "SOFA Feed Sync and Cloudflare Deployment" --ref main
+   ```
+
+4. **Build Distribution**: Ensure files are in dist directory:
+   ```bash
+   npm run docs:build
+   ls -la web/.vitepress/dist/v1/*.json
+   ```
+
+5. **Check Preview vs Production**: Preview deployments often work when production doesn't - this indicates a deployment configuration issue
+
 ## Architecture Overview
 
 ### Data Pipeline
@@ -134,6 +166,19 @@ If Cloudflare Pages builds fail due to invalid JSON:
 2. Check cache files for HTML content (404 errors)
 3. The build process will automatically validate before building
 4. GitHub Actions now validate JSON before committing
+
+### Recent Fix: Empty JSON Feeds (June 2025)
+
+**Issue**: Production site served empty JSON arrays/objects while preview deployments worked correctly.
+
+**Root Cause**: URL replacement logic was removed in a reverted commit, causing the deployment to fail serving data that referenced the wrong domain.
+
+**Solution Applied**:
+1. Restored URL replacement in both `cloudflare_deployment.yml` and `upstream_sync.yml`
+2. Added sed commands to replace all macadmins.io URLs with 2fifteen.io URLs
+3. Ensured proper data flow: fetch → replace URLs → validate → build → deploy
+
+**Key Learning**: Always maintain URL replacement when forking SOFA for custom domains
 
 ## API Keys and Environment Variables
 
