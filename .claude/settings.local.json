@@ -31,7 +31,9 @@
       "Bash(GH_REPO=2fifteen/sofa gh workflow run \"SOFA Feed Sync and Cloudflare Deployment\" --ref main)",
       "Bash(GH_REPO=2fifteen/sofa gh run view 15626014430 --log)",
       "WebFetch(domain:6d7ad026.sofa-8m3.pages.dev)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(./manual-sync.sh:*)",
+      "Bash(GH_REPO=2fifteen/sofa gh run list --workflow=\"SOFA Feed Sync and Cloudflare Deployment\" --limit 5)"
     ],
     "deny": []
   },
