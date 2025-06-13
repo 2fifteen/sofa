@@ -40,24 +40,33 @@ jobs:
           if curl -H "Accept: application/json" -sS "$url" -o "$output.tmp"; then
             # Check if it's valid JSON
             if jq . "$output.tmp" > /dev/null 2>&1; then
-              mv "$output.tmp" "$output"
-              echo "✓ Successfully fetched and validated $output"
-            else
-              echo "✗ Invalid JSON from $url - using empty JSON"
+              # Also check it's not empty
               if [[ "$output" == *"_data_feed.json" ]]; then
-                echo "[]" > "$output"
+                count=$(jq '. | length' "$output.tmp" 2>/dev/null || echo "0")
+                if [ "$count" -gt 0 ]; then
+                  mv "$output.tmp" "$output"
+                  echo "✓ Successfully fetched $output with $count items"
+                else
+                  echo "✗ Empty data from $url - keeping existing file if available"
+                  rm -f "$output.tmp"
+                  # Don't create empty file, use existing if available
+                  if [ ! -f "$output" ]; then
+                    echo "✗ No existing file to fall back on"
+                    exit 1
+                  fi
+                fi
               else
-                echo "{}" > "$output"
+                mv "$output.tmp" "$output"
+                echo "✓ Successfully fetched and validated $output"
               fi
+            else
+              echo "✗ Invalid JSON from $url"
               rm -f "$output.tmp"
+              exit 1
             fi
           else
-            echo "✗ Failed to fetch $url - using empty JSON"
-            if [[ "$output" == *"_data_feed.json" ]]; then
-              echo "[]" > "$output"
-            else
-              echo "{}" > "$output"
-            fi
+            echo "✗ Failed to fetch $url"
+            exit 1
           fi
         }
         
@@ -105,6 +114,19 @@ jobs:
 
     - name: Build VitePress site
       run: npm run docs:build
+    
+    - name: Copy JSON feeds to dist directory
+      run: |
+        # Ensure v1 directory exists in dist
+        mkdir -p web/.vitepress/dist/v1
+        
+        # Copy all JSON and XML files from v1 to dist
+        cp v1/*.json web/.vitepress/dist/v1/ || true
+        cp v1/*.xml web/.vitepress/dist/v1/ || true
+        
+        # List files to verify
+        echo "Files in dist/v1:"
+        ls -la web/.vitepress/dist/v1/
 
     - name: Deploy to Cloudflare Pages
       uses: cloudflare/pages-action@v1

@@ -119,23 +119,25 @@ jobs:
           if [ -f "$file" ] && [ -s "$file" ]; then
             if jq empty "$file" 2>/dev/null; then
               echo "✓ $file is valid JSON"
-            else
-              echo "✗ $file is invalid JSON"
-              # Create empty valid JSON if invalid
+              # Also check that it contains actual data
               if [[ "$file" == *"_data_feed.json" ]]; then
-                echo "[]" > "$file"
-              else
-                echo "{}" > "$file"
+                # Check if the array has elements
+                count=$(jq '. | length' "$file" 2>/dev/null || echo "0")
+                if [ "$count" -gt 0 ]; then
+                  echo "  Contains $count items"
+                else
+                  echo "  ⚠ WARNING: Feed is empty array"
+                fi
               fi
+            else
+              echo "✗ $file is invalid JSON - skipping to avoid data loss"
+              # Don't overwrite with empty JSON - let the build fail instead
+              exit 1
             fi
           else
-            echo "✗ $file is missing or empty"
-            # Create empty valid JSON
-            if [[ "$file" == *"_data_feed.json" ]]; then
-              echo "[]" > "$file"
-            else
-              echo "{}" > "$file"
-            fi
+            echo "✗ $file is missing or empty - sync may have failed"
+            # Don't create empty files - let the build fail instead
+            exit 1
           fi
         done
 
